@@ -69,12 +69,16 @@ Telegram::Bot::Client.run(token) do |bot|
 			stock << {title: title, amount: amount}
 		end
 
-		res_msg = "Изменения на складе: \n"
 
 		# check stock
+		RES_MSG = "Изменения на складе: \n"
+		GET_MSG = "Получено: \n"
+		LOS_MSG = "Потеряно: \n"
+		NOTHING_MSG = "Нет изменений \n"
 
-		get_res = "Получено: \n"
-		los_res = "Потеряно: \n"
+		res_msg = ""
+		get_res = ""
+		los_res = ""
 
 		stock.each do |item|
 			db_item = get_item_amount(item, message.from.id)
@@ -90,7 +94,7 @@ Telegram::Bot::Client.run(token) do |bot|
 					update_item(item, message.from.id)
 				end
 			else	
-				get_msg += "#{item[:title]} +#{item[:amount]}\n"
+				get_res += "#{item[:title]} +#{item[:amount]}\n"
 				insert_item(item, message.from.id)
 			end
 
@@ -104,9 +108,11 @@ Telegram::Bot::Client.run(token) do |bot|
 			update_item({title: h_item[:title], amount: 0}, message.from.id)
 		end
 
-		res_msg += get_res + "\n" + los_res
+		res_msg += (RES_MSG + get_res if get_res != "") + (LOS_MSG + los_res if los_res != "")
 
-	    bot.api.send_message(chat_id: message.from.id, text: res_msg)
+		final_msg = res_msg == "" ? NOTHING_MSG : RES_MSG + res_msg
+
+	    bot.api.send_message(chat_id: message.from.id, text: final_msg)
 	    reset_statuses
 	end
 end
