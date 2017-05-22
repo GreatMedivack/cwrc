@@ -8,9 +8,9 @@ require 'sqlite3'
 
 ITEMS = [:id, :title, :amount, :user_id, :in_report_list]
 
-		RES_MSG = "Изменения на складе: \n"
-		GET_MSG = "\t\t\nПолучено: \n"
-		LOS_MSG = "\t\t\nПотеряно: \n"
+		RES_MSG = "<b>Изменения на складе:</b> \n"
+		GET_MSG = "\t\t\n<b>Получено: </b>\n"
+		LOS_MSG = "\t\t\n<b>Потеряно: </b>\n"
 		NOTHING_MSG = "Нет изменений \n"
 
 
@@ -107,7 +107,7 @@ Telegram::Bot::Client.run(token) do |bot|
 		items = @db.execute("select * from items where user_id=? and in_report_list=?",  message.from.id, 0)
 		items.each do |item|
 			h_item = get_hash(item, ITEMS)
-			los_res += "#{h_item[:title]} -#{h_item[:amount]}\n" if h_item[:amount] != 0
+			los_res += "\t\t\t\t#{h_item[:title]} -#{h_item[:amount]}\n" if h_item[:amount] != 0
 			update_item({title: h_item[:title], amount: 0}, message.from.id)
 		end
 
