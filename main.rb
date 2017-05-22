@@ -8,9 +8,9 @@ require 'sqlite3'
 
 ITEMS = [:id, :title, :amount, :user_id, :in_report_list]
 
-		RES_MSG = "<b>Изменения на складе:</b> \n"
-		GET_MSG = "\t\t\n<b>Получено: </b>\n"
-		LOS_MSG = "\t\t\n<b>Потеряно: </b>\n"
+		RES_MSG = "\u{1F4E5}<b>Изменения на складе:</b> \n"
+		GET_MSG = "\t\t\n\u{1F53A}<b>Получено: </b>\n"
+		LOS_MSG = "\t\t\n\u{1F53B}<b>Потеряно: </b>\n"
 		NOTHING_MSG = "Нет изменений \n"
 
 
