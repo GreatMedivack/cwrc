@@ -59,6 +59,8 @@ Telegram::Bot::Client.run(token) do |bot|
 	    	next
 	    end
 
+	    next unless message.text =~ /Содержимое склада/
+
 		stock = []
 		message.text.each_line do |line|
 			next if line =~ /Содержимое склада/
