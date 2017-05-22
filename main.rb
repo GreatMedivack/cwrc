@@ -108,7 +108,7 @@ Telegram::Bot::Client.run(token) do |bot|
 			update_item({title: h_item[:title], amount: 0}, message.from.id)
 		end
 
-		res_msg += (RES_MSG + get_res if get_res != "") + (LOS_MSG + los_res if los_res != "")
+		res_msg += ( get_res != "" ? RES_MSG + get_res : "") + (los_res != "" ? LOS_MSG + los_res if : "" )
 
 		final_msg = res_msg == "" ? NOTHING_MSG : RES_MSG + res_msg
 
