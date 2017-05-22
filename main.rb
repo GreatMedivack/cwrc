@@ -9,8 +9,8 @@ require 'sqlite3'
 ITEMS = [:id, :title, :amount, :user_id, :in_report_list]
 
 		RES_MSG = "Изменения на складе: \n"
-		GET_MSG = "Получено: \n"
-		LOS_MSG = "Потеряно: \n"
+		GET_MSG = "\t\t\nПолучено: \n"
+		LOS_MSG = "\t\t\nПотеряно: \n"
 		NOTHING_MSG = "Нет изменений \n"
 
 
@@ -54,7 +54,7 @@ end
 Telegram::Bot::Client.run(token) do |bot|
 	bot.listen do |message|
 
-		
+
 		res_msg = ""
 		get_res = ""
 		los_res = ""
@@ -90,14 +90,14 @@ Telegram::Bot::Client.run(token) do |bot|
 				if diff == 0
 					update_item_status(item, message.from.id)
 				elsif diff > 0
-					get_res += "#{item[:title]} +#{diff}\n"
+					get_res += "\t\t\t\t#{item[:title]} +#{diff}\n"
 					update_item(item, message.from.id)
 				else
-					los_res += "#{item[:title]} #{diff}\n"
+					los_res += "\t\t\t\t#{item[:title]} #{diff}\n"
 					update_item(item, message.from.id)
 				end
 			else	
-				get_res += "#{item[:title]} +#{item[:amount]}\n"
+				get_res += "\t\t\t\t#{item[:title]} +#{item[:amount]}\n"
 				insert_item(item, message.from.id)
 			end
 
@@ -115,7 +115,7 @@ Telegram::Bot::Client.run(token) do |bot|
 
 		final_msg = res_msg == "" ? NOTHING_MSG : RES_MSG + res_msg
 
-	    bot.api.send_message(chat_id: message.from.id, text: final_msg)
+	    bot.api.send_message(chat_id: message.from.id, parse_mode: 'HTML' text: final_msg)
 	    reset_statuses
 	end
 end
