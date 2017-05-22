@@ -115,7 +115,7 @@ Telegram::Bot::Client.run(token) do |bot|
 
 		final_msg = res_msg == "" ? NOTHING_MSG : RES_MSG + res_msg
 
-	    bot.api.send_message(chat_id: message.from.id, parse_mode: 'HTML' text: final_msg)
+	    bot.api.send_message(chat_id: message.from.id, parse_mode: 'HTML', text: final_msg)
 	    reset_statuses
 	end
 end
