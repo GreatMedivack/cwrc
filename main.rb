@@ -8,6 +8,11 @@ require 'sqlite3'
 
 ITEMS = [:id, :title, :amount, :user_id, :in_report_list]
 
+		RES_MSG = "Изменения на складе: \n"
+		GET_MSG = "Получено: \n"
+		LOS_MSG = "Потеряно: \n"
+		NOTHING_MSG = "Нет изменений \n"
+
 
 def insert_item(item, user_id)
 	@db.execute "insert into items (title, amount, user_id, in_report_list) values ( ?, ?, ?, ? )", 
@@ -49,6 +54,12 @@ end
 Telegram::Bot::Client.run(token) do |bot|
 	bot.listen do |message|
 
+		
+		res_msg = ""
+		get_res = ""
+		los_res = ""
+
+
 		if message.text == "/start"
 			msg = "Набери команду /stock в ChatWars и отправь форвард полученного сообщения этому боту"
 	    	bot.api.send_message(chat_id: message.from.id, text: msg)
@@ -71,14 +82,6 @@ Telegram::Bot::Client.run(token) do |bot|
 
 
 		# check stock
-		RES_MSG = "Изменения на складе: \n"
-		GET_MSG = "Получено: \n"
-		LOS_MSG = "Потеряно: \n"
-		NOTHING_MSG = "Нет изменений \n"
-
-		res_msg = ""
-		get_res = ""
-		los_res = ""
 
 		stock.each do |item|
 			db_item = get_item_amount(item, message.from.id)
@@ -108,7 +111,7 @@ Telegram::Bot::Client.run(token) do |bot|
 			update_item({title: h_item[:title], amount: 0}, message.from.id)
 		end
 
-		res_msg += ( get_res != "" ? RES_MSG + get_res : "") + (los_res != "" ? LOS_MSG + los_res : "" )
+		res_msg += ( get_res != "" ? GET_MSG + get_res : "") + (los_res != "" ? LOS_MSG + los_res : "" )
 
 		final_msg = res_msg == "" ? NOTHING_MSG : RES_MSG + res_msg
 
