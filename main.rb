@@ -73,18 +73,24 @@ Telegram::Bot::Client.run(token) do |bot|
 
 		# check stock
 
+		get_res = "Получено: \n"
+		los_res = "Потеряно: \n"
+
 		stock.each do |item|
 			db_item = get_item_amount(item, message.from.id)
 			if db_item
 				diff =  item[:amount] - db_item
 				if diff == 0
 					update_item_status(item, message.from.id)
+				elsif diff > 0
+					get_res += "#{item[:title]} +#{diff}\n"
+					update_item(item, message.from.id)
 				else
-					res_msg += "#{item[:title]} #{diff}\n"
+					los_res += "#{item[:title]} #{diff}\n"
 					update_item(item, message.from.id)
 				end
 			else	
-				res_msg += "#{item[:title]} #{item[:amount]}\n"
+				get_msg += "#{item[:title]} +#{item[:amount]}\n"
 				insert_item(item, message.from.id)
 			end
 
@@ -94,9 +100,11 @@ Telegram::Bot::Client.run(token) do |bot|
 		items = @db.execute("select * from items where user_id=? and in_report_list=?",  message.from.id, 0)
 		items.each do |item|
 			h_item = get_hash(item, ITEMS)
-			res_msg += "#{h_item[:title]} -#{h_item[:amount]}\n" if h_item[:amount] != 0
+			los_res += "#{h_item[:title]} -#{h_item[:amount]}\n" if h_item[:amount] != 0
 			update_item({title: h_item[:title], amount: 0}, message.from.id)
 		end
+
+		res_msg += get_res + "\n" + los_res
 
 	    bot.api.send_message(chat_id: message.from.id, text: res_msg)
 	    reset_statuses
