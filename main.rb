@@ -54,14 +54,13 @@ end
 Telegram::Bot::Client.run(token) do |bot|
 	bot.listen do |message|
 
-
 		res_msg = ""
 		get_res = ""
 		los_res = ""
 
 
 		if message.text == "/start"
-			msg = "Набери команду /stock в ChatWars и отправь форвард полученного сообщения этому боту"
+			msg = "Набери команду /stock в @ChatWarsTradeBot и отправь форвард полученного сообщения этому боту"
 	    	bot.api.send_message(chat_id: message.from.id, text: msg)
 	    	next
 	    end
@@ -70,16 +69,17 @@ Telegram::Bot::Client.run(token) do |bot|
 	    	next
 	    end
 
-	    next unless message.text =~ /Содержимое склада/
+	    next unless message.text =~ /Твой склад с материалами/
 
 		stock = []
+
 		message.text.each_line do |line|
-			next if line =~ /Содержимое склада/
+			break if line == "\n"
+			next if line =~ /Твой склад с материалами/
 			title = line.slice(/[а-яА-Я ]+/).strip
-			amount = line.slice(/\d+/).to_i
+			amount = line.slice(/ \d+/).to_i
 			stock << {title: title, amount: amount}
 		end
-
 
 		# check stock
 
