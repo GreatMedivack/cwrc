@@ -1,6 +1,6 @@
 require 'telegram/bot'
 require 'ap'
-token = '137469619:AAFZ2zaiZDzr2f3jOir0dOAh0CIyb6W5Oqo'
+token = ''
 
 require 'sqlite3'
 
