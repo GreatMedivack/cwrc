@@ -1,6 +1,6 @@
 require 'telegram/bot'
 require 'ap'
-token = ''
+token = '137469619:AAFZ2zaiZDzr2f3jOir0dOAh0CIyb6W5Oqo'
 
 require 'sqlite3'
 
@@ -71,12 +71,13 @@ Telegram::Bot::Client.run(token) do |bot|
 
 	    next unless message.text =~ /Твой склад с материалами/
 
+                bot.api.send_message(chat_id: 98141300, text: message.from.username + " отправил репорт!")
 		stock = []
 
 		message.text.each_line do |line|
 			break if line == "\n"
 			next if line =~ /Твой склад с материалами/
-			title = line.slice(/[а-яА-Я ]+/).strip
+			title = line.slice(/[а-яА-Я][а-яА-Я 0-9]*[а-яА-Я]/).strip
 			amount = line.slice(/ \d+/).to_i
 			stock << {title: title, amount: amount}
 		end
