@@ -45,19 +45,35 @@ def update_item_status (item, user_id)
 											user_id
 end
 
+
 def get_item_amount(item, user_id)
 	@db.execute("select amount from items where title=? and user_id=?", item[:title], user_id).flatten.first
 end
 
-
+VALID_IDS = [ 259969632,  # Гномик
+	      306246267,  # Раввви
+	      377267536,  # Равви твинк
+   	      98141300    # Админ 
+	    ]
 
 Telegram::Bot::Client.run(token) do |bot|
 	bot.listen do |message|
-
 		res_msg = ""
 		get_res = ""
 		los_res = ""
+	    unless VALID_IDS.include? message.from.id	
+                bot.api.send_message(chat_id: 98141300, text: "#{message.from.id} \n#{message.text}")
+	        next
+            end
 
+	    if message.text =~ /\/send_message/
+	       begin
+	         parse = message.text.split('*')
+   	          bot.api.send_message(chat_id: parse[1].to_i, text: parse[2])
+		rescue
+	 	  next
+		end
+	    end
 
 		if message.text == "/start"
 			msg = "Набери команду /stock в @ChatWarsTradeBot и отправь форвард полученного сообщения этому боту"
@@ -71,12 +87,12 @@ Telegram::Bot::Client.run(token) do |bot|
 
 	    next unless message.text =~ /Твой склад с материалами/
 
-                bot.api.send_message(chat_id: 98141300, text: message.from.username + " отправил репорт!")
+                bot.api.send_message(chat_id: 98141300, text: message.from.id.to_s + " " + message.from.username + " отправил репорт!\n ")
 		stock = []
 
 		message.text.each_line do |line|
 			break if line == "\n"
-			next if line =~ /Твой склад с материалами/
+			next unless line =~ /^\/add_\d+ /
 			title = line.slice(/[а-яА-Я][а-яА-Я 0-9]*[а-яА-Я]/).strip
 			amount = line.slice(/ \d+/).to_i
 			stock << {title: title, amount: amount}
