@@ -206,7 +206,7 @@ Telegram::Bot::Client.run(token) do |bot|
 			end
 
 			#check db
-			items = @db.execute("select * from items where user_id=? and in_report_list=?",  message.from.id, 0)
+			items = @db.execute("select * from items where user_id=? and in_report_list=?",  user[:id], 0)
 			items.each do |item|
 				h_item = get_hash(item, ITEMS)
 				los_res += "\t\t\t\t#{h_item[:title]} -#{h_item[:amount]}\n" if h_item[:amount] != 0
