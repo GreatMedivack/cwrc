@@ -19,7 +19,8 @@ rows = db.execute <<-SQL
     name varchar(250) DEFAULT 'unknown',
     level integer DEFAULT 0,
     class varchar(250) DEFAULT 'unknown',
-    cw_id integer
+    cw_id integer,
+    updated_at date DEFAULT '1970-01-01'
   );
 SQL
 
