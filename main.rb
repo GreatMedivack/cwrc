@@ -12,6 +12,21 @@ ITEMS = [:id, :title, :amount, :user_id, :in_report_list]
 		GET_MSG = "\t\t\n\u{1F53A}<b>Получено: </b>\n"
 		LOS_MSG = "\t\t\n\u{1F53B}<b>Потеряно: </b>\n"
 		NOTHING_MSG = "Нет изменений \n"
+USERS = [:id, :name, :level, :class, :cw_id]
+
+# Превый запуск
+
+def user_initialize(user_id)
+	user = @db.execute("select * from users where cw_id=?", user_id)
+	if user == []
+		@db.execute "insert into users (cw_id) values ( ? )", user_id
+		puts "user created"
+		user = @db.execute("select * from users where cw_id=?", user_id)
+	else
+		puts "user confirmed"
+	end
+	get_hash(user.first, USERS)
+end
 
 
 def insert_item(item, user_id)
@@ -45,39 +60,62 @@ def update_item_status (item, user_id)
 											user_id
 end
 
-
 def get_item_amount(item, user_id)
 	@db.execute("select amount from items where title=? and user_id=?", item[:title], user_id).flatten.first
 end
 
-VALID_IDS = [ 259969632,  # Гномик
-	      306246267,  # Раввви
-	      377267536,  # Равви твинк
-   	      98141300    # Админ 
+kb =  [
+	    Telegram::Bot::Types::KeyboardButton.new(text: 'Информация', one_time_keyboard: true),
+	    Telegram::Bot::Types::KeyboardButton.new(text: 'Склад', one_time_keyboard: true)
+	  ]
+markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(keyboard: kb)
+
+VALID_IDS = [ 	259969632,  # Гномик
+	      		306246267,  # Раввви
+	      		377267536,  # Равви твинк
+   	      		98141300    # Админ 
 	    ]
 
 Telegram::Bot::Client.run(token) do |bot|
+
 	bot.listen do |message|
+
+		user = user_initialize(message.from.id)
+
 		res_msg = ""
 		get_res = ""
 		los_res = ""
+
 	    unless VALID_IDS.include? message.from.id	
                 bot.api.send_message(chat_id: 98141300, text: "#{message.from.id} \n#{message.text}")
 	        next
-            end
+        end
+
+	 	if message.text == "Информация"
+	 		msg = "#{user[:cw_id]}\nИмя:\t<b>#{user[:name]}</b>\nКласс:\t#{user[:class]}\nУровень:\t#{user[:level]}"
+	    	ap msg
+	    	bot.api.send_message(chat_id: message.from.id, parse_mode: 'HTML', text: msg)
+	 	end	
+	 	
+	 	if message.text == "Склад"
+			items = @db.execute("select title, amount from items where user_id=? and amount>?",  message.from.id, 0)
+	    	stock = items.map {|item| item[0] + ":#{' '*(80 - item[0].size)}x" + item[1].to_s }
+	    	msg = stock.join("\n")
+	    	bot.api.send_message(chat_id: message.from.id, parse_mode: 'HTML', text: msg)
+	 	end	
 
 	    if message.text =~ /\/send_message/
-	       begin
-	         parse = message.text.split('*')
-   	          bot.api.send_message(chat_id: parse[1].to_i, text: parse[2])
-		rescue
-	 	  next
-		end
+	       	begin
+	        	parse = message.text.split('*')
+   	         	bot.api.send_message(chat_id: parse[1].to_i, text: parse[2])
+			rescue
+		 	  next
+			end
 	    end
 
 		if message.text == "/start"
 			msg = "Набери команду /stock в @ChatWarsTradeBot и отправь форвард полученного сообщения этому боту"
-	    	bot.api.send_message(chat_id: message.from.id, text: msg)
+	    	bot.api.send_message(chat_id: message.from.id, text: msg, reply_markup: markup)
 	    	next
 	    end
 
@@ -86,7 +124,6 @@ Telegram::Bot::Client.run(token) do |bot|
 	    end
 
 	    next unless message.text =~ /Твой склад с материалами/
-
                 bot.api.send_message(chat_id: 98141300, text: message.from.id.to_s + " " + message.from.username + " отправил репорт!\n ")
 		stock = []
 
