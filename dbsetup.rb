@@ -5,11 +5,10 @@ db = SQLite3::Database.new "database.db"
 rows = db.execute <<-SQL
   create table items (
     ID INTEGER PRIMARY KEY AUTOINCREMENT,
-    title varchar(250),
     amount integer,
     user_id integer,
     in_report_list boolean DEFAULT 0,
-    to_hide boolean DEFAULT 0
+    item_type_id integer
   );
 SQL
 
@@ -28,6 +27,7 @@ rows = db.execute <<-SQL
   create table item_types (
     ID INTEGER PRIMARY KEY AUTOINCREMENT,
     title varchar(250),
-    cw_id integer
+    cw_id integer,
+    valuable boolean
   );
 SQL
