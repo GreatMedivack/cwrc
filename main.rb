@@ -87,17 +87,18 @@ def update_profile(msg, user)
 											user[:id]
 end
 
-kb =  [
-	    Telegram::Bot::Types::KeyboardButton.new(text: 'Информация', one_time_keyboard: true),
-	    Telegram::Bot::Types::KeyboardButton.new(text: 'Склад', one_time_keyboard: true)
+kb =  [	    ['Информация', 'Склад']	
+	    #[Telegram::Bot::Types::KeyboardButton.new(text: 'Информация', one_time_keyboard: true)],
+	    #[Telegram::Bot::Types::KeyboardButton.new(text: 'Склад', one_time_keyboard: true)]
 	  ]
-markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(keyboard: kb)
+markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(keyboard: kb, one_time_keyboard: false, resize_keyboard: true)
 
 VALID_IDS = [ 	259969632,  # Гномик
 	      		306246267,  # Раввви
 	      		377267536,  # Равви твинк
    	      		98141300,   # Админ 
-   	      		298568062   # Кузя 
+   	      		298568062,   # Кузя
+			387881985 # Димас 
 	    ]
 
 Telegram::Bot::Client.run(token) do |bot|
