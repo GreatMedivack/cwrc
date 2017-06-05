@@ -223,7 +223,7 @@ Telegram::Bot::Client.run(token) do |bot|
 						valuable = 0
 					end
 					amount = line.slice(/ \d+/).to_i
-					stock << {id: id, title: title, amount: amount, valuable: valuable}
+					stock << {id: id, title: title, amount: amount, valuable: valuable2}
 				end
 
 				# check stock
