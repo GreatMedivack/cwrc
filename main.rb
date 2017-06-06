@@ -22,6 +22,9 @@ TRADE_BOT = 278525885
 CW_BOT = 265204902
 PROFILE_LIFE_TIME = 600
 
+VALUABLE_ITEM = "\u{2B50}"
+SIMPLE_ITEM = "\u{1F539}"
+
 # Превый запуск
 
 def user_initialize(user_id)
@@ -209,7 +212,7 @@ Telegram::Bot::Client.run(token) do |bot|
 
 			 	if message.text == "Склад"
 			 		items = @db.execute("select item_types.title, amount, item_types.valuable from items inner join item_types on items.item_type_id = item_types.cw_id where user_id=? and amount>? order by item_types.valuable desc",  user[:id], 0)
-			    	stock = items.map {|item|  "\t\t\t\t" + (item[2] == 1 ? "\u{2B50}" : "\u{1F539}") + "_#{item[0]}_  *x#{item[1]}*" }
+			    	stock = items.map {|item|  "\t\t\t\t #{item[2] == 1 ? VALUABLE_ITEM : SIMPLE_ITEM}_#{item[0]}_  *x#{item[1]}*" }
 			    	msg = stock.join("\n")
 			    	msg = "Пусто" if msg.empty?
 			    	bot.api.send_message(chat_id: message.from.id, parse_mode: 'Markdown', text: "\u{1F4DC}*Содержимое склада*\n#{msg}")
@@ -262,16 +265,16 @@ Telegram::Bot::Client.run(token) do |bot|
 							if diff == 0
 								update_item_status(item[:cw_id], user[:id])
 							elsif diff > 0
-								get_res += "\t\t\t\t#{db_item[:title]} +#{diff}\n"
+								get_res += "\t\t\t\t#{db_item[:valuable] == 1 ? VALUABLE_ITEM : SIMPLE_ITEM }#{db_item[:title]} +#{diff}\n"
 								update_item(item, user[:id])
 							else
-								los_res += "\t\t\t\t#{db_item[:title]} #{diff}\n"
+								los_res += "\t\t\t\t#{db_item[:valuable] == 1 ? VALUABLE_ITEM : SIMPLE_ITEM }#{db_item[:title]} #{diff}\n"
 								update_item(item, user[:id])
 							end
 						else
 							insert_item(item, user[:id])
 							db_item = get_item(item[:cw_id], user[:id])
-							get_res += "\t\t\t\t#{db_item[:title]} +#{db_item[:amount]}\n"
+							get_res += "\t\t\t\t#{db_item[:valuable] == 1 ? VALUABLE_ITEM : SIMPLE_ITEM}#{db_item[:title]} +#{db_item[:amount]}\n"
 						end
 					end
 
@@ -279,7 +282,7 @@ Telegram::Bot::Client.run(token) do |bot|
 					items = @db.execute("select amount, item_types.title, item_type_id, item_types.valuable from items inner join item_types on items.item_type_id = item_types.cw_id where user_id=? and in_report_list=?",  user[:id], 0)
 					items.each do |item|
 						h_item = get_hash(item, GET_ITEMS)
-						los_res += "\t\t\t\t#{h_item[:title]} -#{h_item[:amount]}\n" if h_item[:amount] != 0
+						los_res += "\t\t\t\t#{h_item[:valuable] == 1 ? VALUABLE_ITEM : SIMPLE_ITEM }#{h_item[:title]} -#{h_item[:amount]}\n" if h_item[:amount] != 0
 						update_item({cw_id: h_item[:item_type_id], amount: 0}, user[:id])
 					end
 
