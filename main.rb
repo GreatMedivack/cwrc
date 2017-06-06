@@ -1,7 +1,7 @@
 require 'telegram/bot'
 require 'date'
 require 'ap'
-token = ''
+token = '137469619:AAF6IlU6hHJEXNy6IcJDtK9lEqy1AwXDkrM'
 
 require 'sqlite3'
 
@@ -143,7 +143,8 @@ VALID_IDS = [ 	259969632,  # Гномик
 	      				377267536,  # Равви твинк
    	      			98141300,   # Админ
    	      			298568062,  # Кузя
-								387881985 	# Димас
+								387881985, 	# Димас
+				318388551 # Толстян
 	    			]
 
 Telegram::Bot::Client.run(token) do |bot|
