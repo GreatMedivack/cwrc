@@ -131,7 +131,11 @@ def update_profile(msg, user)
 											user[:id]
 end
 
-kb =  [['Информация', 'Склад'], ['Спрятать ресурсы']]
+def share_stock
+	@db.execute "select item_types.title, sum(amount), item_types.valuable from items inner join item_types on items.item_type_id = item_types.cw_id where amount > 0 group by item_type_id"
+end
+
+kb =  [['Информация', 'Склад'], ['Спрятать ресурсы', 'Общий склад']]
 markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(keyboard: kb, one_time_keyboard: false, resize_keyboard: true)
 
 VALID_IDS = [ 	259969632,  # Гномик
@@ -152,7 +156,7 @@ Telegram::Bot::Client.run(token) do |bot|
 		  when Telegram::Bot::Types::CallbackQuery
 
 		  when Telegram::Bot::Types::InlineQuery
-		  		if message.query =~ /wts_/
+		  		if message.query =~ /wts_\d+_\d+_1000/
 		  			data = message.query.split('_')
 		  			title =  get_item_name(data[1])
 		  			results = [
@@ -216,6 +220,14 @@ Telegram::Bot::Client.run(token) do |bot|
 			    	msg = stock.join("\n")
 			    	msg = "Пусто" if msg.empty?
 			    	bot.api.send_message(chat_id: message.from.id, parse_mode: 'Markdown', text: "\u{1F4DC}*Содержимое склада*\n#{msg}")
+			 	end
+
+			 	if message.text == 'Общий склад'
+			 		items = share_stock
+			 		stock = items.map {|item|  "\t\t\t\t #{item[2] == 1 ? VALUABLE_ITEM : SIMPLE_ITEM}_#{item[0]}_  *x#{item[1]}*" }
+			    	msg = stock.join("\n")
+			    	msg = "Пусто" if msg.empty?
+			    	bot.api.send_message(chat_id: message.from.id, parse_mode: 'Markdown', text: "\u{1F4DC}*Содержимое всех складов*\n#{msg}")
 			 	end
 
 		    if message.text =~ /\/send_message/
