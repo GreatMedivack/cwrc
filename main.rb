@@ -1,12 +1,11 @@
 require 'telegram/bot'
 require 'date'
+require 'ap'
 token = ''
 
 require 'sqlite3'
 
 @db = SQLite3::Database.new 'database.db'
-
-@inline_answer = []
 
 RES_MSG = "\u{1F4E5}<b>Изменения на складе:</b> \n"
 GET_MSG = "\t\t\n\u{1F53A}<b>Получено: </b>\n"
@@ -61,6 +60,10 @@ end
 
 # Работа с типами предметов
 
+def get_item_name(cw_id)
+	@db.execute("select title from item_types where cw_id=?", cw_id).flatten.first
+end
+
 def get_item_types_ids
 	@db.execute("select cw_id from item_types").flatten
 end
@@ -88,31 +91,19 @@ def get_valuable_resources(user_id)
 	@db.execute("select items.item_type_id, items.amount, item_types.title from items inner join item_types on items.item_type_id = item_types.cw_id where items.user_id=? and item_types.valuable=? and items.amount > ?", user_id, 1, 0)
 end
 
-def create_inline_answer(items)
-
-end
-
 def create_res_hide_btns(items)
 	buttons = []
 	line = []
-	answers = []
 	items.each_with_index do |item, index|
 		h_item = get_hash(item, GET_VALUABLE_ITEMS)
-		line << Telegram::Bot::Types::InlineKeyboardButton.new(text: "#{h_item[:title]} x#{h_item[:amount]}", switch_inline_query: "/wts_#{h_item[:cw_id]}_#{h_item[:amount]}_1000")
+		line << Telegram::Bot::Types::InlineKeyboardButton.new( text: "#{h_item[:title]} x#{h_item[:amount]}",
+																switch_inline_query: "/wts_#{h_item[:cw_id]}_#{h_item[:amount]}_1000")
 		if (index + 1) % 3 == 0
 				buttons << line
 				line = []
 		end
-		answers << [index + 1, "Спрятать #{h_item[:title]} x#{h_item[:amount]}", "/wts_#{h_item[:cw_id]}_#{h_item[:amount]}_1000"]
 	end
 	buttons << line
-	@inline_answer = answers.map do |arr|
-	Telegram::Bot::Types::InlineQueryResultArticle.new(
-		id: arr[0],
-		title: arr[1],
-		input_message_content: Telegram::Bot::Types::InputTextMessageContent.new(message_text: arr[2])
-	)
-	end
 	markup = Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: buttons)
 end
 
@@ -154,13 +145,24 @@ Telegram::Bot::Client.run(token) do |bot|
 
 		user = user_initialize(message.from.id)
 
-
 		case message
 		  when Telegram::Bot::Types::CallbackQuery
 
 		  when Telegram::Bot::Types::InlineQuery
-				bot.api.answer_inline_query(inline_query_id: message.id, results: @inline_answer)
-
+		  		if message.query =~ /wts_/
+		  			data = message.query.split('_')
+		  			title =  get_item_name(data[1])
+		  			results = [
+		  				[1, "Спрятать #{title} x#{data[2]}", "/wts_#{data[1]}_#{data[2]}_1000"]
+		  			].map do |arr|
+				      Telegram::Bot::Types::InlineQueryResultArticle.new(
+				        id: arr[0],
+				        title: arr[1],
+				        input_message_content: Telegram::Bot::Types::InputTextMessageContent.new(message_text: arr[2])
+				      )
+				    end
+					bot.api.answer_inline_query(inline_query_id: message.id, results: results)
+				end
 		  when Telegram::Bot::Types::Message
 				res_msg = ""
 				get_res = ""
