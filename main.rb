@@ -152,7 +152,7 @@ Telegram::Bot::Client.run(token) do |bot|
 		  when Telegram::Bot::Types::CallbackQuery
 
 		  when Telegram::Bot::Types::InlineQuery
-		  		if message.query =~ /wts_/
+		  		if message.query =~ /wts_\d+_\d+_1000/
 		  			data = message.query.split('_')
 		  			title =  get_item_name(data[1])
 		  			results = [
