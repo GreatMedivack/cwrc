@@ -21,6 +21,7 @@ USERS = [:id, :name, :level, :class, :cw_id, :updated_at]
 TRADE_BOT = 278525885
 CW_BOT = 265204902
 PROFILE_LIFE_TIME = 600
+STOCK_LIFE_TIME = 60
 
 VALUABLE_ITEM = "\u{2B50}"
 SIMPLE_ITEM = "\u{1F539}"
@@ -132,7 +133,7 @@ def update_profile(msg, user)
 end
 
 def share_stock
-	@db.execute "select item_types.title, sum(amount), item_types.valuable from items inner join item_types on items.item_type_id = item_types.cw_id where amount > 0 group by item_type_id"
+	@db.execute "select item_types.title, sum(amount), item_types.valuable from items inner join item_types on items.item_type_id = item_types.cw_id where amount > 0 group by item_type_id order by item_types.valuable desc"
 end
 
 kb =  [['Информация', 'Склад'], ['Спрятать ресурсы', 'Общий склад']]
@@ -250,6 +251,9 @@ Telegram::Bot::Client.run(token) do |bot|
 	      	if message.forward_from.nil? || message.forward_from.id != TRADE_BOT
 		    		bot.api.send_message(chat_id: message.from.id, text: "Форвард не из @ChatWarsTradeBot")
 	       		next
+					elsif Time.now.to_i - message.forward_date > STOCK_LIFE_TIME
+						bot.api.send_message(chat_id: message.from.id, text: "Нужен форвард не старше 1 минуты")
+						next
 	       	end
 	        bot.api.send_message(chat_id: 98141300, text: "#{user[:name]} отправил репорт!\n ")
 					stock = []
