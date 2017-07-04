@@ -20,7 +20,7 @@ end
 
 Telegram::Bot::Client.run(token) do |bot|
 	@users.each do |user|
-		bot.api.send_message(chat_id: 98141300, text: "Обнови профиль сейчас, а не то опять случится бида, когда в последний момент начнешь прятать ресы =(")
+		bot.api.send_message(chat_id: user[0], text: "Обнови профиль сейчас, а не то опять случится бида, когда в последний момент начнешь прятать ресы =(")
 	end
 end
 
