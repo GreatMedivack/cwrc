@@ -25,6 +25,7 @@ STOCK_LIFE_TIME = 60
 
 VALUABLE_ITEM = "\u{2B50}"
 SIMPLE_ITEM = "\u{1F539}"
+NOT_RESOURCE = "\u{1F458}"
 
 # Превый запуск
 
@@ -133,7 +134,7 @@ def update_profile(msg, user)
 end
 
 def share_stock
-	@db.execute "select item_types.title, sum(amount), item_types.valuable from items inner join item_types on items.item_type_id = item_types.cw_id where amount > 0 group by item_type_id order by item_types.valuable desc"
+	@db.execute "select item_types.cw_id, item_types.title, sum(amount), item_types.valuable from items inner join item_types on items.item_type_id = item_types.cw_id where amount > 0 group by item_type_id order by item_types.valuable desc"
 end
 
 kb =  [['Информация', 'Склад'], ['Спрятать ресурсы', 'Общий склад']]
@@ -144,7 +145,10 @@ VALID_IDS = [ 	259969632,  # Гномик
 	      				377267536,  # Равви твинк
    	      			98141300,   # Админ
    	      			298568062,  # Кузя
-								387881985 	# Димас
+								387881985, 	# Димас
+				318388551, # Толстян
+				352073877, # Курва
+				435159344 # Толстян спойлер
 	    			]
 
 Telegram::Bot::Client.run(token) do |bot|
@@ -225,7 +229,8 @@ Telegram::Bot::Client.run(token) do |bot|
 
 			 	if message.text == 'Общий склад'
 			 		items = share_stock
-			 		stock = items.map {|item|  "\t\t\t\t #{item[2] == 1 ? VALUABLE_ITEM : SIMPLE_ITEM}_#{item[0]}_  *x#{item[1]}*" }
+					puts items
+			 		stock = items.map {|item|  "\t\t\t\t #{item[3] == 1 ? VALUABLE_ITEM : (item[0] / 1000 > 0) ? NOT_RESOURCE : SIMPLE_ITEM}_#{item[1]}_  *x#{item[2]}*" }
 			    	msg = stock.join("\n")
 			    	msg = "Пусто" if msg.empty?
 			    	bot.api.send_message(chat_id: message.from.id, parse_mode: 'Markdown', text: "\u{1F4DC}*Содержимое всех складов*\n#{msg}")
