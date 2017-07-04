@@ -5,7 +5,7 @@ token = ''
 
 require 'sqlite3'
 
-@db = SQLite3::Database.new 'database.db'
+@db = SQLite3::Database.new '/home/softs/appserver/cwrc/database.db'
 
 critical_date = (Date.today - 5).strftime("%Y-%m-%d")
 
