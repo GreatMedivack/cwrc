@@ -46,6 +46,19 @@ def insert_item(item, user_id)
                                            	1
 end
 
+def list_item_types
+	msg = ""
+	item_types = @db.execute("select id, title, valuable from item_types where cw_id=?", cw_id).flatten
+	item_types.each do |item|
+		msg += "#{item[1]} #{item[2] ==1 ? VALUABLE_ITEM : SIMPLE_ITEM} \/change_#{item[2]}_#{item[0]}\n"
+	end
+	msg
+end
+
+def change_valuable(id, val)
+	@db.execute "update item_types set valuable=? where id=?", val == 0 ? 1 : 0, id
+end
+
 def reset_statuses
 	@db.execute "update items set in_report_list=?", 0
 end
@@ -190,6 +203,16 @@ Telegram::Bot::Client.run(token) do |bot|
 
 		    if message.text == 'Спрятать ресурсы'
 			    bot.api.send_message(chat_id: message.chat.id, text: 'Выбери ресурс', reply_markup: create_res_hide_btns(get_valuable_resources(user[:id])))
+		    end
+
+		    if message.text == 'Что прятать?'
+			    bot.api.send_message(chat_id: message.chat.id, text: list_item_types, reply_markup: markup)
+		    end
+
+		    if message.text =~ /\/change_\d_\d+/
+		    	params = message.text.split('_')
+		    	change_valuable(params[1], params[2])
+			    bot.api.send_message(chat_id: message.chat.id, text: list_item_types, reply_markup: markup)
 		    end
 
        	if message.text =~ /Битва семи замков через/
