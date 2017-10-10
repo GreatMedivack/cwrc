@@ -2,7 +2,6 @@ require 'telegram/bot'
 require 'date'
 require 'ap'
 token = ''
-
 require 'sqlite3'
 
 @db = SQLite3::Database.new 'database.db'
@@ -22,7 +21,7 @@ TRADE_BOT = 278525885
 CW_BOT = 265204902
 PROFILE_LIFE_TIME = 600
 STOCK_LIFE_TIME = 60
-
+ADMIN = 98141300
 VALUABLE_ITEM = "\u{2B50}"
 SIMPLE_ITEM = "\u{1F539}"
 NOT_RESOURCE = "\u{1F458}"
@@ -137,24 +136,22 @@ def share_stock
 	@db.execute "select item_types.cw_id, item_types.title, sum(amount), item_types.valuable from items inner join item_types on items.item_type_id = item_types.cw_id where amount > 0 group by item_type_id order by item_types.valuable desc"
 end
 
+def valid_user?(id)
+	valid_users = @db.execute("select cw_id from valid_users").flatten
+	valid_users.include?(id)
+end
+
+def add_user_to_validlist(id)
+	@db.execute("insert into valid_users (cw_id) values ( ? )", id) unless valid_user?(id)
+end
+
 kb =  [['Информация', 'Склад'], ['Спрятать ресурсы', 'Общий склад']]
 markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(keyboard: kb, one_time_keyboard: false, resize_keyboard: true)
 
-VALID_IDS = [ 	259969632,  # Гномик
-	      				306246267,  # Раввви
-	      				377267536,  # Равви твинк
-   	      			98141300,   # Админ
-   	      			298568062,  # Кузя
-								387881985, 	# Димас
-				318388551, # Толстян
-				352073877, # Курва
-				435159344 # Толстян спойлер
-	    			]
 
 Telegram::Bot::Client.run(token) do |bot|
 
 	bot.listen do |message|
-
 		user = user_initialize(message.from.id)
 
 		case message
@@ -180,8 +177,8 @@ Telegram::Bot::Client.run(token) do |bot|
 				get_res = ""
 				los_res = ""
 
-		    unless VALID_IDS.include? message.from.id
-	          bot.api.send_message(chat_id: 98141300, text: "#{message.from.id} \n#{message.text}")
+		    unless valid_user? message.from.id
+	          bot.api.send_message(chat_id: 98141300, text: "#{message.from.id} \n#{message.text}\n\/adduser_#{message.from.id}")
 		        next
 	       end
 
@@ -248,6 +245,12 @@ Telegram::Bot::Client.run(token) do |bot|
 
 		    if message.text == "/stock"
 		    	next
+		    end
+
+		    if message.text =~ /\/adduser_\d+/ && message.from.id == ADMIN
+			user_id = message.text.split('_').last.to_i
+			add_user_to_validlist(user_id)
+			next
 		    end
 
 		    #Основной говнокод

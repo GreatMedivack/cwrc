@@ -31,3 +31,12 @@ rows = db.execute <<-SQL
     valuable boolean
   );
 SQL
+
+
+rows = db.execute <<-SQL
+  create table valid_users (
+    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    cw_id integer,
+    comment varchar(250)
+  );
+SQL
